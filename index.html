@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trade-ME · Analisis Crypto</title>
+<meta name="description" content="Analisis teknikal crypto (SOL, BTC, ETH, dst.) dengan saran sesuai kondisi pasar, rencana entri/stop/target, ukuran posisi, dan uji historis.">
+<style>
+  :root {
+    --bg: #0e1116; --panel: #161b22; --panel2: #1c232c; --line: #2a323d;
+    --text: #e6edf3; --muted: #8b98a7;
+    --green: #2ebd85; --red: #f6465d; --amber: #f0b429; --blue: #4c9aff;
+    --green-bg: rgba(46,189,133,.14); --red-bg: rgba(246,70,93,.14); --amber-bg: rgba(240,180,41,.14);
+    --radius: 12px;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f4f6f9; --panel: #ffffff; --panel2: #eef1f5; --line: #d9dfe7;
+      --text: #14181f; --muted: #5b6776;
+      --green: #0f9d6a; --red: #d92d45; --amber: #b7791f; --blue: #1f6feb;
+      --green-bg: rgba(15,157,106,.12); --red-bg: rgba(217,45,69,.10); --amber-bg: rgba(183,121,31,.13);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 18px; margin: 0; letter-spacing: .2px; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 12px; font-weight: 600; }
+  .top { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .brand small { color: var(--muted); font-weight: 400; margin-left: 8px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .chips, .tfs { display: flex; flex-wrap: wrap; gap: 6px; }
+  button, input { font: inherit; color: inherit; }
+  .chip, .tf, .btn { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px 11px; cursor: pointer; }
+  .chip:hover, .tf:hover, .btn:hover { border-color: var(--muted); }
+  .chip[aria-pressed="true"], .tf[aria-pressed="true"] { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .coin-input { width: 118px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; text-transform: uppercase; }
+  .coin-input:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+  .grid { display: grid; gap: 14px; grid-template-columns: 1fr; }
+  @media (min-width: 900px) { .grid { grid-template-columns: 1.15fr .85fr; } .span2 { grid-column: 1 / -1; } }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; min-width: 0; }
+  .price-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; }
+  .sym { font-size: 14px; color: var(--muted); font-weight: 600; }
+  .price { font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .chg { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .up { color: var(--green); } .down { color: var(--red); } .flat { color: var(--muted); }
+  .meta { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .verdict { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 16px 0 10px; }
+  .badge { font-weight: 800; font-size: 20px; padding: 6px 14px; border-radius: 10px; letter-spacing: .03em; }
+  .badge.buy, .badge.buy-weak { background: var(--green-bg); color: var(--green); }
+  .badge.sell, .badge.sell-weak { background: var(--red-bg); color: var(--red); }
+  .badge.wait { background: var(--amber-bg); color: var(--amber); }
+  .conf { color: var(--muted); font-size: 13px; }
+  .conf b { color: var(--text); }
+  .meter { position: relative; height: 10px; border-radius: 6px; margin: 8px 0 4px; background: linear-gradient(90deg, var(--red), var(--panel2) 35%, var(--panel2) 65%, var(--green)); }
+  .meter i { position: absolute; top: -4px; width: 4px; height: 18px; border-radius: 2px; background: var(--text); transform: translateX(-50%); transition: left .3s; }
+  .meter-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+  .advice { font-size: 16px; margin: 14px 0 6px; }
+  .notes { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 6px; }
+  .notes li { padding: 8px 10px 8px 12px; border-radius: 8px; background: var(--panel2); border-left: 3px solid var(--muted); font-size: 14px; }
+  .notes li.good { border-color: var(--green); } .notes li.warn { border-color: var(--amber); } .notes li.bad { border-color: var(--red); } .notes li.info { border-color: var(--blue); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  .lv { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); }
+  .lv:last-child { border-bottom: 0; }
+  .lv span:first-child { color: var(--muted); }
+  .lv b { font-variant-numeric: tabular-nums; text-align: right; }
+  .plan-hint { color: var(--muted); font-size: 13px; margin: 10px 0 0; }
+  .calc { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .calc-in { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .calc label { display: grid; gap: 4px; font-size: 12px; color: var(--muted); }
+  .calc input { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; width: 100%; }
+  .chart-box { position: relative; width: 100%; height: 380px; }
+  canvas { width: 100%; height: 100%; display: block; }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .legend i { display: inline-block; width: 14px; height: 3px; vertical-align: middle; margin-right: 5px; border-radius: 2px; }
+  .state { padding: 40px 16px; text-align: center; color: var(--muted); }
+  .state.error { color: var(--red); }
+  .bt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 12px; }
+  .stat { background: var(--panel2); border-radius: 10px; padding: 10px 12px; }
+  .stat small { display: block; color: var(--muted); font-size: 12px; }
+  .stat b { font-size: 18px; font-variant-numeric: tabular-nums; }
+  .small { font-size: 13px; color: var(--muted); }
+  .disclaimer { border: 1px solid var(--amber); background: var(--amber-bg); border-radius: var(--radius); padding: 12px 14px; font-size: 13px; margin-top: 14px; }
+  details { margin-top: 10px; } summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+  .foot { color: var(--muted); font-size: 12px; margin: 14px 0 28px; display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: space-between; }
+  .spin { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--line); border-top-color: var(--blue); border-radius: 50%; animation: sp .8s linear infinite; vertical-align: -2px; margin-right: 8px; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spin { animation: none; } .meter i { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1 class="brand">Trade-ME<small>analisis teknikal crypto</small></h1>
+    <div class="controls">
+      <div class="chips" id="chips" role="group" aria-label="Pilih koin"></div>
+      <input class="coin-input" id="coin" list="coin-list" maxlength="12" placeholder="Koin lain" aria-label="Ketik simbol koin, mis. PEPE" autocomplete="off" spellcheck="false">
+      <datalist id="coin-list"></datalist>
+      <div class="tfs" id="tfs" role="group" aria-label="Timeframe"></div>
+      <button class="btn" id="refresh" title="Muat ulang data" aria-label="Muat ulang data">↻</button>
+    </div>
+  </div>
+
+  <div id="app"><div class="card state"><span class="spin"></span>Memuat data pasar…</div></div>
+
+  <div class="disclaimer" role="note">
+    <b>Bukan nasihat keuangan.</b> Ini alat bantu analisis teknikal berbasis aturan, bukan prediksi. Tidak ada indikator yang bisa menjamin arah harga. "Keyakinan" hanya mengukur seberapa searah indikator-indikatornya, <u>bukan</u> peluang menang. Selalu pakai stop-loss dan jangan risikokan uang yang tidak siap hilang.
+  </div>
+  <div class="foot">
+    <span id="source">Sumber data: –</span>
+    <span id="updated"></span>
+  </div>
+</div>
+<script src="analysis.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
